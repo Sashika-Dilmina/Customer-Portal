@@ -1,1 +1,37 @@
-<p>customer-list works!</p>
+<header class="bar">
+    <h1>Customers</h1>
+    <a routerLink="/customers/new" class="btn">+ New customer </a>
+</header>
+
+@if (loading()) {
+    <p class="muted">Loading...</p>
+} @else if (error()) {
+    <p class="muted">No customers yet. Create your first one.</p>
+} @else if (customers().length === 0){
+    <p class="muted">No customers yet. Create your first one.</p>
+} @else {
+    <table>
+        <thead>
+            <tr>
+                <th>code</th><th>Name</th><th>Type</th>
+                <th>Date of birth</th><th>Status</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (c of customers(); track c.customerId) {
+                <tr>
+                    <td>{{ c.customerCode }}</td>
+                    <td>{{ c.customerName }}</td>
+                    <td>{{ c.customerType }}</td>
+                    <td>{{ c.dateOfBirth | date: 'mediumDate' }}</td>
+                    <td>{{ c.isActive ? 'Active' : 'Inactive'}}</td>
+                    <td class="actions">
+                        <a [routerLink]="['/customers', c.customerId, 'edit']">Edit</a>
+                        <button type="button" (click)="remove(c)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+

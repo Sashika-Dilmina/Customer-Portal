@@ -1,1 +1,65 @@
-<p>customer-form works!</p>
+<header class="bar">
+  <h1>{{ isEdit() ? 'Edit customer' : 'New customer' }}</h1>
+</header>
+
+<form novalidate (submit)="$event.preventDefault(); save()">
+
+  <div class="field">
+    <label for="customerName">Customer name *</label>
+    <input id="customerName" type="text" [formfield]="customerForm.customerName" />
+    @for (e of customerForm.customerName().errors(); track $index) {
+      <small class="err">{{ e.message }}</small>
+    }
+  </div>
+
+  <div class="field">
+    <label for="customerType">Customer type *</label>
+    <select id="customerType" [formfield]="customerForm.customerType">
+      @for (t of customerTypes; track t) {
+        <option [value]="t">{{ t }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="dateOfBirth">Date of birth *</label>
+    <input id="dateOfBirth" type="date" [formfield]="customerForm.dateOfBirth" />
+    @for (e of customerForm.dateOfBirth().errors(); track $index) {
+      <small class="err">{{ e.message }}</small>
+    }
+  </div>
+
+  <div class="field">
+    <label for="address">Address</label>
+    <textarea id="address" rows="2" [formfield]="customerForm.address"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" type="email" [formfield]="customerForm.email" />
+    @for (e of customerForm.email().errors(); track $index) {
+      <small class="err">{{ e.message }}</small>
+    }
+  </div>
+
+  <div class="field">
+    <label for="phoneNumber">Phone number</label>
+    <input id="phoneNumber" type="text" [formfield]="customerForm.phoneNumber" />
+  </div>
+
+  @if (isEdit()) {
+    <div class="field checkbox">
+      <label><input type="checkbox" [formfield]="customerForm.isActive" /> Active</label>
+    </div>
+  }
+
+  @if (serverError()) {
+    <p class="err banner">{{ serverError() }}</p>
+  }
+
+  <div class="actions">
+    <button type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+    <button type="button" (click)="cancel()">Cancel</button>
+  </div>
+
+</form>
