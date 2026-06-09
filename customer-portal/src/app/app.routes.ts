@@ -1,11 +1,30 @@
 import { Routes } from '@angular/router';
-import { CustomerList } from './features/customers/customer-list/customer-list';
-import { CustomerForm } from './features/customers/customer-form/customer-form';
-
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'customers', pathMatch: 'full'},
-    { path: 'customers', component: CustomerList},
-    { path: 'customers/new', component: CustomerForm},
-    { path: 'customers/:id/edit', component: CustomerForm },
+  {
+    path: '',
+    redirectTo: 'customers',
+    pathMatch: 'full'
+  },
+
+  {
+    path: 'customers',
+    loadComponent: () =>
+      import('./features/customers/customer-list/customer-list')
+        .then(m => m.CustomerList)
+  },
+
+  {
+    path: 'customers/new',
+    loadComponent: () =>
+      import('./features/customers/customer-form/customer-form')
+        .then(m => m.CustomerForm)
+  },
+
+  {
+    path: 'customers/:id/edit',
+    loadComponent: () =>
+      import('./features/customers/customer-form/customer-form')
+        .then(m => m.CustomerForm)
+  }
 ];
