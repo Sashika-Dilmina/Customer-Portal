@@ -4,8 +4,7 @@ import { form, required, maxLength, email, FormField } from '@angular/forms/sign
 import { CustomerApi } from '../../../core/customer-api';
 import { CustomerType, CUSTOMER_TYPES, CustomerCreate } from '../../../models/customer.model';
 
-
-
+// The editable shape (strings, never null — easier to bind to inputs).
 interface CustomerFormModel {
   customerName: string;
   address: string;
@@ -18,14 +17,13 @@ interface CustomerFormModel {
 
 @Component({
   selector: 'app-customer-form',
-  standalone: true,
   imports: [FormField],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './customer-form.html',
-  styleUrls: ['./customer-form.scss']
+  styleUrl: './customer-form.scss',
 })
-
 export class CustomerForm {
-
+  // Route param ":id" is bound straight into this input.
   readonly id = input<string>();
 
   private readonly api = inject(CustomerApi);
@@ -33,23 +31,25 @@ export class CustomerForm {
 
   protected readonly customerTypes = CUSTOMER_TYPES;
   protected readonly saving = signal(false);
-  protected serverError = signal<string | null>(null);
+  protected readonly serverError = signal<string | null>(null);
 
   protected readonly isEdit = computed(() => !!this.id());
+
+  // The form model is a writable signal...
   protected readonly model = signal<CustomerFormModel>(this.emptyModel());
 
+  // ...and the form wraps it with a validation schema.
   protected readonly customerForm = form(this.model, (path) => {
-    required(path.customerName, { message: 'Customer name is required.'});
+    required(path.customerName, { message: 'Customer name is required.' });
     maxLength(path.customerName, 150);
-    required(path.dateOfBirth, { message: 'Date of birth is required.'});
+    required(path.dateOfBirth, { message: 'Date of birth is required.' });
     required(path.customerType);
     maxLength(path.address, 250);
-    email(path.email, { message: 'Enter a valid email address.'});
-    
+    email(path.email, { message: 'Enter a valid email address.' });
   });
 
-    constructor() {
-    
+  constructor() {
+    // When an id is present (edit mode), load the record into the model.
     effect(() => {
       const id = this.id();
       if (!id) return;
@@ -68,42 +68,45 @@ export class CustomerForm {
   }
 
   protected save(): void {
-    if (this.customerForm().invalid()){
+    // Reading the root field's state gives validity as a signal.
+    if (this.customerForm().invalid()) {
       this.customerForm().markAsTouched();
       return;
     }
+
     this.saving.set(true);
     this.serverError.set(null);
 
     const v = this.model();
     const payload: CustomerCreate = {
-    customerName: v.customerName,
-    address: v.address || null,
-    dateOfBirth: v.dateOfBirth,
-    customerType: v.customerType,
-    email: v.email || null,
-    phoneNumber: v.phoneNumber || null
-  };
-    if (this.isEdit()) {
-    this.api.update(Number(this.id()), {
-      ...payload,
-      isActive: v.isActive
-    }).subscribe({
-      next: () => this.router.navigate(['/customers']),
-      error: () => {
-        this.serverError.set('Save failed. Check the API and try again.');
-        this.saving.set(false);
-      }
-    });
-  } else {
-    this.api.create(payload).subscribe({
-      next: () => this.router.navigate(['/customers']),
-      error: () => {
-        this.serverError.set('Save failed. Check the API and try again.');
-        this.saving.set(false);
-      }
-    });
-  }
+      customerName: v.customerName,
+      address: v.address || null,
+      dateOfBirth: v.dateOfBirth,
+      customerType: v.customerType,
+      email: v.email || null,
+      phoneNumber: v.phoneNumber || null,
+    };
+
+if (this.isEdit()) {
+  this.api.update(Number(this.id()), {
+    ...payload,
+    isActive: v.isActive
+  }).subscribe({
+    next: () => this.router.navigate(['/customers']),
+    error: () => {
+      this.serverError.set('Save failed. Check the API and try again.');
+      this.saving.set(false);
+    }
+  });
+} else {
+  this.api.create(payload).subscribe({
+    next: () => this.router.navigate(['/customers']),
+    error: () => {
+      this.serverError.set('Save failed. Check the API and try again.');
+      this.saving.set(false);
+    }
+  });
+}
   }
 
   protected cancel(): void {
