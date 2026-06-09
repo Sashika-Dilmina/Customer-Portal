@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal ,computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { CustomerApi } from '../../../core/customer-api';
 import { Customer } from '../../../models/customer.model';
+
 
 @Component({
   selector: 'app-customer-list',
@@ -18,6 +19,7 @@ export class CustomerList {
   protected readonly customers = signal<Customer[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly searchTerm = signal('');
 
   constructor() {
     this.load();
@@ -38,4 +40,19 @@ export class CustomerList {
       error: () => this.error.set('Delete failed.'),
     });
   }
+
+      protected readonly filteredCustomers = computed(() => {
+      const search = this.searchTerm().toLowerCase().trim();
+
+      if (!search) {
+        return this.customers();
+      }
+
+      return this.customers().filter(c =>
+        c.customerName.toLowerCase().includes(search) ||
+        c.customerCode.toLowerCase().includes(search) ||
+        (c.email ?? '').toLowerCase().includes(search) ||
+        (c.phoneNumber ?? '').includes(search)
+      );
+    });
 }

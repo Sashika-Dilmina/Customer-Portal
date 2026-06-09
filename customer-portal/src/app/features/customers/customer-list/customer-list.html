@@ -1,7 +1,19 @@
 <header class="bar">
     <h1>Customers</h1>
-    <a routerLink="/customers/new" class="btn">+ New customer </a>
+    <a routerLink="/customers/new" class="btn">
+        + New customer
+    
+    </a>
 </header>
+
+<div class="search-box">
+  <input
+    type="text"
+    placeholder="Search customers..."
+    [value]="searchTerm()"
+    (input)="searchTerm.set($any($event.target).value)"
+  />
+</div>
 
 @if (loading()) {
     <p class="muted">Loading...</p>
@@ -18,7 +30,7 @@
             </tr>
         </thead>
         <tbody>
-            @for (c of customers(); track c.customerId) {
+            @for (c of filteredCustomers(); track c.customerId) {
                 <tr>
                     <td>{{ c.customerCode }}</td>
                     <td>{{ c.customerName }}</td>
